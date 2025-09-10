@@ -75,8 +75,11 @@ web-build/
 # APK files
 *.apk
 
-# Scripts and documentation
+# Scripts
 *.sh
+
+# Documentation (keep README.md)
 *.md
+!README.md
 
 
