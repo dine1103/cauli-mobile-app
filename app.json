@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Cauli - Mental Health Companion",
+    "slug": "cauli-mobile-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#667eea"
+      },
+      "package": "com.anonymous.caulimobileapp"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
