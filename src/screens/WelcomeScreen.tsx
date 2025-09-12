@@ -7,13 +7,25 @@ import {
   Dimensions,
   SafeAreaView,
   Image,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const navigation = useNavigation();
+
+  const resetOnboarding = async () => {
+    try {
+      await AsyncStorage.removeItem('hasOnboarded');
+    } catch (e) {
+      // ignore
+    }
+    // Đơn giản: chỉ sử dụng navigate
+    (navigation as any).navigate('Onboarding');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -22,11 +34,10 @@ export default function WelcomeScreen() {
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Image 
-              source={require('../assets/images/logowithouttext.png')} 
-              style={styles.logoImage}
+              source={require('../assets/images/logo.png')} 
+              style={styles.brandLogo}
               resizeMode="contain"
             />
-            <Text style={styles.appName}>cauli</Text>
           </View>
         </View>
 
@@ -55,6 +66,15 @@ export default function WelcomeScreen() {
           >
             <Text style={styles.secondaryButtonText}>Đăng ký</Text>
           </TouchableOpacity>
+
+          {__DEV__ && (
+            <TouchableOpacity
+              style={styles.tertiaryButton}
+              onPress={resetOnboarding}
+            >
+              <Text style={styles.tertiaryButtonText}>Xem lại Onboarding</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -89,6 +109,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#4A8C6B',
   },
+  brandLogo: {
+    width: 120,
+    height: 40,
+  },
   mainContent: {
     flex: 1,
     justifyContent: 'center',
@@ -118,14 +142,18 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 25,
     alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 2px 8px rgba(0,0,0,0.25)',
+      },
+      default: {
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+    }),
   },
   primaryButtonText: {
     color: 'white',
@@ -144,5 +172,17 @@ const styles = StyleSheet.create({
     color: '#4A8C6B',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  tertiaryButton: {
+    backgroundColor: 'transparent',
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: 'center',
+  },
+  tertiaryButtonText: {
+    color: '#6B7280',
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
@@ -7,7 +7,7 @@ import { supabase } from './lib/supabase';
 import { Session } from '@supabase/supabase-js';
 
 // Import screens
-import SplashScreen from './screens/SplashScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -18,6 +18,17 @@ import DiaryScreen from './screens/DiaryScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Wrapper component để sử dụng navigation hook
+function OnboardingWrapper() {
+  const navigation = useNavigation();
+  return (
+    <OnboardingScreen 
+      onBack={() => navigation.goBack()} 
+      onComplete={() => navigation.goBack()}
+    />
+  );
+}
 
 function MainTabs() {
   return (
@@ -87,14 +98,14 @@ export default function App() {
       setSession(session);
     });
 
-    // Hide splash after 15 seconds (enough time for 4 onboarding screens + transitions)
-    const splashTimer = setTimeout(() => {
-      setShowSplash(false);
-    }, 15000);
+    // Hide splash after 300 seconds (5 minutes for testing) - DISABLED FOR TESTING
+    // const splashTimer = setTimeout(() => {
+    //   setShowSplash(false);
+    // }, 300000);
 
     return () => {
       subscription.unsubscribe();
-      clearTimeout(splashTimer);
+      // clearTimeout(splashTimer);
     };
   }, []);
 
@@ -103,12 +114,15 @@ export default function App() {
       <StatusBar style="auto" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {loading || showSplash ? (
-          <Stack.Screen name="Splash" component={SplashScreen} />
+          <Stack.Screen name="Onboarding">
+            {() => <OnboardingScreen onComplete={() => setShowSplash(false)} />}
+          </Stack.Screen>
         ) : session ? (
           <Stack.Screen name="Main" component={MainTabs} />
         ) : (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="Onboarding" component={OnboardingWrapper} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
           </>
