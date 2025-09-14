@@ -98,6 +98,10 @@ export default function App() {
     };
   }, []);
 
+  if (loading || showSplash) {
+    return <SplashScreen />;
+  }
+
   return (
     <NavigationContainer>
       <StatusBar style="auto" />

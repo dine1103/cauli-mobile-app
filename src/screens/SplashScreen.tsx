@@ -8,7 +8,7 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,7 +37,7 @@ const splashData = [
 ];
 
 export default function SplashScreen() {
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -82,8 +82,10 @@ export default function SplashScreen() {
           }).start();
         });
       } else {
-        // After completing all onboarding screens, do nothing
-        // App.tsx will handle navigation
+        // After completing all onboarding screens, navigate to Welcome
+        setTimeout(() => {
+          navigation.navigate('Welcome' as never);
+        }, 1000);
       }
     }, 3000);
 
@@ -105,13 +107,14 @@ export default function SplashScreen() {
         }).start();
       });
     } else {
-      // Do nothing when on last screen
-      // App.tsx will handle navigation
+      // Navigate to Welcome when on last screen
+      navigation.navigate('Welcome' as never);
     }
   };
 
   const handleSkip = () => {
-    // Do nothing - App.tsx will handle navigation
+    // Navigate to Welcome when skip is pressed
+    navigation.navigate('Welcome' as never);
   };
 
   return (
