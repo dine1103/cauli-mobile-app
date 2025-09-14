@@ -3,8 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 import { supabase } from './src/lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import screens
 import SplashScreen from './src/screens/SplashScreen';
@@ -15,6 +17,9 @@ import HomeScreen from './src/screens/HomeScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import DiaryScreen from './src/screens/DiaryScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
+
+const ONBOARDING_STORAGE_KEY = 'hasOnboarded:v2';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -71,32 +76,58 @@ function MainTabs() {
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasOnboarded, setHasOnboarded] = useState<boolean | null>(null);
+  // Cờ trong phiên chạy (chỉ tồn tại khi chưa reload trang web)
+  const [onboardingCompletedThisSession, setOnboardingCompletedThisSession] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+    let isMounted = true;
 
-    // Listen for auth changes
+    async function init() {
+      try {
+        const [sessionResult, onboardedFlag] = await Promise.all([
+          supabase.auth.getSession(),
+          AsyncStorage.getItem(ONBOARDING_STORAGE_KEY),
+        ]);
+
+        if (!isMounted) return;
+
+        setSession(sessionResult.data.session);
+        let effectiveHasOnboarded = onboardedFlag === 'true';
+        // Force hiển thị Onboarding khi chạy web nếu có query param hoặc localStorage flag
+        try {
+          if (Platform.OS === 'web') {
+            const params = new URLSearchParams(window.location.search);
+            const forceQuery = params.get('onboarding') === '1' || params.get('showOnboarding') === '1';
+            const forceLocal = typeof localStorage !== 'undefined' && localStorage.getItem('forceOnboarding') === '1';
+            if (forceQuery || forceLocal) {
+              effectiveHasOnboarded = false;
+            }
+          }
+        } catch {}
+        setHasOnboarded(effectiveHasOnboarded);
+      } catch (e) {
+        if (isMounted) setHasOnboarded(false);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    init();
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
-    // Hide splash after 15 seconds (enough time for 4 onboarding screens + transitions)
-    const splashTimer = setTimeout(() => {
-      setShowSplash(false);
-    }, 15000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(splashTimer);
-    };
+    return () => subscription.unsubscribe();
   }, []);
+
+  if (loading) {
+    return <SplashScreen />;
+  }
 
   return (
     <NavigationContainer>
@@ -107,10 +138,22 @@ export default function App() {
         ) : session ? (
           <Stack.Screen name="Main" component={MainTabs} />
         ) : (
+          // Đã hoàn thành Onboarding nhưng chưa đăng nhập -> Welcome/Login/Register (và vẫn có thể vào lại Onboarding để test)
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Onboarding">
+              {(props) => (
+                <OnboardingScreen
+                  {...(props as any)}
+                  onComplete={() => {
+                    handleOnboardingComplete();
+                    (props as any).navigation.replace('Welcome');
+                  }}
+                />
+              )}
+            </Stack.Screen>
           </>
         )}
       </Stack.Navigator>

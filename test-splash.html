@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test SplashScreen</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #CAEAC7;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            color: #4A8C6B;
+            margin-bottom: 20px;
+        }
+        .image {
+            width: 300px;
+            height: 200px;
+            border: 2px solid #4A8C6B;
+            margin: 20px auto;
+            display: block;
+        }
+        .title {
+            font-size: 18px;
+            color: #4A8C6B;
+            margin: 20px 0;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #4A8C6B;
+            opacity: 0.8;
+            margin: 10px 0;
+        }
+        .dots {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #4A8C6B;
+            margin: 0 5px;
+            opacity: 0.3;
+        }
+        .dot.active {
+            opacity: 1;
+        }
+        .button {
+            background-color: #CAEAC7;
+            border: 1px solid #4A8C6B;
+            color: #4A8C6B;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">cauli</div>
+        
+        <div id="content">
+            <img id="image" class="image" src="" alt="Onboarding Image">
+            <div id="title" class="title"></div>
+            <div id="subtitle" class="subtitle"></div>
+        </div>
+        
+        <div class="dots">
+            <div class="dot active" data-step="0"></div>
+            <div class="dot" data-step="1"></div>
+            <div class="dot" data-step="2"></div>
+            <div class="dot" data-step="3"></div>
+        </div>
+        
+        <div>
+            <button class="button" onclick="skip()">Bỏ qua</button>
+            <button class="button" onclick="next()">Tiếp theo</button>
+        </div>
+    </div>
+
+    <script>
+        const splashData = [
+            {
+                title: "Cauli là người bạn sẵn sàng lắng nghe mỗi khi bạn cần",
+                subtitle: "Niềm tin của bạn là vinh dự của Cauli",
+                image: "src/assets/images/welcomescreen/wc1.png"
+            },
+            {
+                title: "Chia sẻ với Cauli, bạn hãy tự tin chia sẻ tâm sự của mình",
+                subtitle: "Luôn sẵn lòng, không phán xét, không chỉ trích câu chuyện của bạn",
+                image: "src/assets/images/welcomescreen/wc2.png"
+            },
+            {
+                title: "Chia sẻ sự cảm thông và giúp bạn bớt áp lực",
+                subtitle: "Vừa cảm nhận được sự quan tâm, vừa học cách lắng nghe, cảm thông, chia sẻ",
+                image: "src/assets/images/welcomescreen/wc3.png"
+            },
+            {
+                title: "Bạn đã sẵn sàng tâm sự và chia sẻ cùng Cauli chưa?",
+                subtitle: "Chúc bạn có những trải nghiệm thật tốt với Cauli",
+                image: "src/assets/images/welcomescreen/wc4.png"
+            }
+        ];
+
+        let currentStep = 0;
+
+        function updateDisplay() {
+            const data = splashData[currentStep];
+            document.getElementById('image').src = data.image;
+            document.getElementById('title').textContent = data.title;
+            document.getElementById('subtitle').textContent = data.subtitle;
+            
+            // Update dots
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentStep);
+            });
+        }
+
+        function next() {
+            if (currentStep < splashData.length - 1) {
+                currentStep++;
+                updateDisplay();
+            } else {
+                alert('Chuyển đến LoginScreen!');
+            }
+        }
+
+        function skip() {
+            alert('Bỏ qua - Chuyển đến LoginScreen!');
+        }
+
+        // Auto advance every 3 seconds
+        setInterval(() => {
+            if (currentStep < splashData.length - 1) {
+                next();
+            }
+        }, 3000);
+
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>
