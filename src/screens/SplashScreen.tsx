@@ -7,7 +7,7 @@ import {
   Animated,
   Dimensions,
   StatusBar,
-  TouchableOpacity,
+  PanResponder,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -47,6 +47,30 @@ export default function SplashScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+
+  // PanResponder for swipe gestures
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 10;
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // Handle swipe gesture
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        const { dx } = gestureState;
+        const threshold = 50;
+
+        if (dx > threshold && currentStep > 0) {
+          // Swipe right - go to previous screen
+          handlePrevious();
+        } else if (dx < -threshold && currentStep < splashData.length - 1) {
+          // Swipe left - go to next screen
+          handleNext();
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     // Start initial animations
@@ -117,11 +141,6 @@ export default function SplashScreen() {
     }
   };
 
-  const handleSkip = () => {
-    // Navigate to Welcome when skip is pressed
-    navigation.navigate('Welcome' as never);
-  };
-
   const handlePrevious = () => {
     if (currentStep > 0) {
       Animated.timing(fadeAnim, {
@@ -161,17 +180,14 @@ export default function SplashScreen() {
             }
           ]}
         >
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../assets/images/logowithouttext.png')} 
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.appName}>cauli</Text>
-          </View>
+          <Image 
+            source={require('../assets/images/welcomescreen/logocaulitextonline.png')} 
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
         </Animated.View>
 
-        {/* Onboarding content with animation */}
+        {/* Onboarding content with animation and swipe gesture */}
         <Animated.View 
           style={[
             styles.onboardingSection,
@@ -180,6 +196,7 @@ export default function SplashScreen() {
               transform: [{ translateY: slideAnim }]
             }
           ]}
+          {...panResponder.panHandlers}
         >
           <Image 
             source={splashData[currentStep].image} 
@@ -188,6 +205,7 @@ export default function SplashScreen() {
           />
           <Text style={styles.onboardingTitle}>{splashData[currentStep].title}</Text>
           <Text style={styles.onboardingSubtitle}>{splashData[currentStep].subtitle}</Text>
+          <Text style={styles.swipeHint}>← Vuốt để chuyển →</Text>
         </Animated.View>
 
         {/* Progress dots */}
@@ -212,35 +230,6 @@ export default function SplashScreen() {
           </View>
         </Animated.View>
 
-        {/* Navigation buttons */}
-        <Animated.View 
-          style={[
-            styles.navigationSection,
-            {
-              opacity: fadeAnim,
-            }
-          ]}
-        >
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-              <Text style={styles.skipButtonText}>Bỏ qua</Text>
-            </TouchableOpacity>
-            
-            <View style={styles.navButtons}>
-              {currentStep > 0 && (
-                <TouchableOpacity style={styles.prevButton} onPress={handlePrevious}>
-                  <Text style={styles.prevButtonText}>Trước</Text>
-                </TouchableOpacity>
-              )}
-              
-              <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-                <Text style={styles.nextButtonText}>
-                  {currentStep < splashData.length - 1 ? 'Tiếp theo' : 'Bắt đầu'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Animated.View>
       </View>
 
       {/* Footer */}
@@ -282,21 +271,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
   logoImage: {
-    width: 60,
-    height: 60,
-    marginRight: 12,
-  },
-  appName: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#4A8C6B',
-    letterSpacing: 2,
+    width: 200,
+    height: 80,
   },
   onboardingSection: {
     alignItems: 'center',
@@ -326,6 +303,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     opacity: 0.8,
   },
+  swipeHint: {
+    fontSize: 14,
+    color: '#4A8C6B',
+    textAlign: 'center',
+    marginTop: 20,
+    opacity: 0.6,
+    fontStyle: 'italic',
+  },
   progressSection: {
     alignItems: 'center',
     marginBottom: 30,
@@ -345,55 +330,6 @@ const styles = StyleSheet.create({
   progressDotActive: {
     opacity: 1,
     transform: [{ scale: 1.2 }],
-  },
-  navigationSection: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: width * 0.9,
-  },
-  skipButton: {
-    padding: 10,
-  },
-  skipButtonText: {
-    fontSize: 16,
-    color: '#4A8C6B',
-    opacity: 0.7,
-  },
-  navButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  prevButton: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 25,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#4A8C6B',
-  },
-  prevButtonText: {
-    fontSize: 16,
-    color: '#4A8C6B',
-    fontWeight: '500',
-  },
-  nextButton: {
-    backgroundColor: '#4A8C6B',
-    paddingHorizontal: 25,
-    paddingVertical: 12,
-    borderRadius: 25,
-    minWidth: 120,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
   },
   footer: {
     position: 'absolute',

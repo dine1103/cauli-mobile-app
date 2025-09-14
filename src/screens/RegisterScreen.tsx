@@ -10,10 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
+  Dimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
+
+const { width, height } = Dimensions.get('window');
 
 export default function RegisterScreen() {
   const navigation = useNavigation();
@@ -57,7 +60,12 @@ export default function RegisterScreen() {
         Alert.alert(
           'Đăng ký thành công',
           'Vui lòng kiểm tra email để xác thực tài khoản',
-          [{ text: 'OK', onPress: () => navigation.goBack() }]
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('Login' as never),
+            },
+          ]
         );
       }
     } catch (error) {
@@ -69,32 +77,34 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#CAEAC7', '#A8D8A8']}
-        style={styles.gradient}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.header}>
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
-              >
-                <Text style={styles.backButtonText}>←</Text>
-              </TouchableOpacity>
-              <Text style={styles.title}>Đăng ký</Text>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Header with logo */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require('../assets/images/welcomescreen/logocaulitextonline.png')} 
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             </View>
+          </View>
 
+          {/* Main content */}
+          <View style={styles.mainContent}>
+            <Text style={styles.title}>Tạo tài khoản</Text>
+            <Text style={styles.subtitle}>Điền thông tin để tạo tài khoản mới</Text>
+
+            {/* Form */}
             <View style={styles.form}>
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Họ và tên</Text>
+                <Text style={styles.inputLabel}>Họ và tên</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Nhập họ và tên"
-                  placeholderTextColor="rgba(255, 255, 255, 0.6)"
                   value={fullName}
                   onChangeText={setFullName}
                   autoCapitalize="words"
@@ -102,25 +112,22 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Email</Text>
+                <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Nhập email của bạn"
-                  placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                  placeholder="Nhập email"
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  autoCorrect={false}
                 />
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Mật khẩu</Text>
+                <Text style={styles.inputLabel}>Mật khẩu</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
-                  placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                  placeholder="Nhập mật khẩu"
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
@@ -128,11 +135,10 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Xác nhận mật khẩu</Text>
+                <Text style={styles.inputLabel}>Xác nhận mật khẩu</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Nhập lại mật khẩu"
-                  placeholderTextColor="rgba(255, 255, 255, 0.6)"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
@@ -140,25 +146,26 @@ export default function RegisterScreen() {
               </View>
 
               <TouchableOpacity
-                style={[styles.registerButton, loading && styles.registerButtonDisabled]}
+                style={[styles.registerButton, loading && styles.disabledButton]}
                 onPress={handleRegister}
                 disabled={loading}
               >
                 <Text style={styles.registerButtonText}>
-                  {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+                  {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
                 </Text>
               </TouchableOpacity>
-
-              <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>Đã có tài khoản? </Text>
-                <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
-                  <Text style={styles.loginLink}>Đăng nhập ngay</Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </LinearGradient>
+
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Đã có tài khoản? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+                <Text style={styles.loginLink}>Đăng nhập</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -166,95 +173,95 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
+    backgroundColor: '#CAEAC7',
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 40,
-    paddingVertical: 20,
+    paddingHorizontal: 20,
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 40,
     marginTop: 20,
+    marginBottom: 30,
   },
-  backButton: {
-    marginRight: 20,
+  logoContainer: {
+    alignItems: 'center',
   },
-  backButtonText: {
-    fontSize: 24,
-    color: 'white',
-    fontWeight: 'bold',
+  logoImage: {
+    width: 150,
+    height: 60,
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#4A8C6B',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#4A8C6B',
+    textAlign: 'center',
+    marginBottom: 40,
+    opacity: 0.8,
   },
   form: {
-    flex: 1,
+    marginBottom: 30,
   },
   inputContainer: {
     marginBottom: 20,
   },
-  label: {
+  inputLabel: {
     fontSize: 16,
-    color: 'white',
+    fontWeight: '600',
+    color: '#4A8C6B',
     marginBottom: 8,
-    fontWeight: '500',
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 14,
     fontSize: 16,
-    color: 'white',
+    color: '#333',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: '#E0E0E0',
   },
   registerButton: {
-    backgroundColor: 'white',
+    backgroundColor: '#4A8C6B',
+    borderRadius: 12,
     paddingVertical: 16,
-    borderRadius: 25,
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 24,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    marginTop: 20,
   },
-  registerButtonDisabled: {
+  disabledButton: {
     opacity: 0.6,
   },
   registerButtonText: {
-    color: '#4A8C6B',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  loginContainer: {
+  footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
   },
-  loginText: {
-    color: 'rgba(255, 255, 255, 0.8)',
+  footerText: {
     fontSize: 16,
+    color: '#4A8C6B',
   },
   loginLink: {
-    color: 'white',
     fontSize: 16,
+    color: '#4A8C6B',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
   },

@@ -34,7 +34,7 @@ export default function WelcomeScreen() {
         <View style={styles.header}>
           <View style={styles.logoContainer}>
             <Image 
-              source={require('../assets/images/logo.png')} 
+              source={require('../assets/images/welcomescreen/logocaulitextonline.png')} 
               style={styles.brandLogo}
               resizeMode="contain"
             />

@@ -58,11 +58,10 @@ export default function LoginScreen() {
           <View style={styles.header}>
             <View style={styles.logoContainer}>
               <Image 
-                source={require('../assets/images/logowithouttext.png')} 
+                source={require('../assets/images/welcomescreen/logocaulitextonline.png')} 
                 style={styles.logoImage}
                 resizeMode="contain"
               />
-              <Text style={styles.appName}>cauli</Text>
             </View>
           </View>
 
@@ -144,18 +143,11 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logoContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
   logoImage: {
-    width: 30,
-    height: 30,
-    marginRight: 8,
-  },
-  appName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4A8C6B',
+    width: 150,
+    height: 60,
   },
   mainContent: {
     alignItems: 'center',
