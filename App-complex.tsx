@@ -3,6 +3,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
+import { supabase } from './src/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 // Import screens
 import SplashScreen from './src/screens/SplashScreen';
@@ -67,29 +69,48 @@ function MainTabs() {
 }
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Hide splash after 12 seconds (4 screens x 3 seconds each)
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    // Hide splash after 15 seconds (enough time for 4 onboarding screens + transitions)
     const splashTimer = setTimeout(() => {
       setShowSplash(false);
-    }, 12000);
+    }, 15000);
 
-    return () => clearTimeout(splashTimer);
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(splashTimer);
+    };
   }, []);
 
   return (
     <NavigationContainer>
       <StatusBar style="auto" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {showSplash ? (
+        {loading || showSplash ? (
           <Stack.Screen name="Splash" component={SplashScreen} />
+        ) : session ? (
+          <Stack.Screen name="Main" component={MainTabs} />
         ) : (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Main" component={MainTabs} />
           </>
         )}
       </Stack.Navigator>

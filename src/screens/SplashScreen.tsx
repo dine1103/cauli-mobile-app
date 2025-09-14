@@ -7,11 +7,9 @@ import {
   Animated,
   Dimensions,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-// Debug: Add console.log to see what's happening
-console.log('SplashScreen component loaded');
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,49 +48,69 @@ export default function SplashScreen() {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
-  // Debug: Add console.log to see current step
-  console.log('SplashScreen rendered, currentStep:', currentStep);
-
   useEffect(() => {
     // Start initial animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 1000,
-        useNativeDriver: false, // Changed to false for web compatibility
+        useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
         tension: 50,
         friction: 7,
-        useNativeDriver: false, // Changed to false for web compatibility
+        useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 800,
-        useNativeDriver: false, // Changed to false for web compatibility
+        useNativeDriver: true,
       }),
     ]).start();
   }, []);
 
-  // Auto-navigation logic
+  // Auto-navigation logic - 3 seconds per screen
   useEffect(() => {
     const timer = setTimeout(() => {
       if (currentStep < splashData.length - 1) {
-        console.log('Auto advancing to step:', currentStep + 1);
-        setCurrentStep(currentStep + 1);
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          setCurrentStep(currentStep + 1);
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }).start();
+        });
       } else {
-        // After completing all onboarding screens, do nothing
-        // App.tsx will handle navigation
+        // After completing all onboarding screens, navigate to Welcome
+        setTimeout(() => {
+          navigation.navigate('Welcome' as never);
+        }, 1000);
       }
-    }, 10000); // 10 seconds per screen
+    }, 3000); // 3 seconds per screen
 
     return () => clearTimeout(timer);
   }, [currentStep]);
 
   const handleNext = () => {
     if (currentStep < splashData.length - 1) {
-      setCurrentStep(currentStep + 1);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setCurrentStep(currentStep + 1);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
     } else {
       // Navigate to Welcome when on last screen
       navigation.navigate('Welcome' as never);
@@ -102,6 +120,23 @@ export default function SplashScreen() {
   const handleSkip = () => {
     // Navigate to Welcome when skip is pressed
     navigation.navigate('Welcome' as never);
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setCurrentStep(currentStep - 1);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
+    }
   };
 
   return (
@@ -128,41 +163,32 @@ export default function SplashScreen() {
         >
           <View style={styles.logoContainer}>
             <Image 
-              source={require('../assets/images/logo.png')} 
-              style={styles.brandLogo}
+              source={require('../assets/images/logowithouttext.png')} 
+              style={styles.logoImage}
               resizeMode="contain"
             />
+            <Text style={styles.appName}>cauli</Text>
           </View>
         </Animated.View>
 
-              {/* Onboarding content with animation */}
-              <Animated.View
-                style={[
-                  styles.onboardingSection,
-                  {
-                    opacity: fadeAnim,
-                    transform: [{ translateY: slideAnim }]
-                  }
-                ]}
-              >
-                <Text style={styles.debugText}>Debug: Step {currentStep + 1} of {splashData.length}</Text>
-                <Text style={styles.debugText}>Image path: {JSON.stringify(splashData[currentStep].image)}</Text>
-                
-                {/* Test with simple text first */}
-                <View style={styles.testImageContainer}>
-                  <Text style={styles.testText}>TEST IMAGE AREA</Text>
-                  <Image
-                    source={splashData[currentStep].image}
-                    style={styles.onboardingImage}
-                    resizeMode="contain"
-                    onError={(error) => console.log('Image load error:', error)}
-                    onLoad={() => console.log('Image loaded successfully')}
-                  />
-                </View>
-                
-                <Text style={styles.onboardingTitle}>{splashData[currentStep].title}</Text>
-                <Text style={styles.onboardingSubtitle}>{splashData[currentStep].subtitle}</Text>
-              </Animated.View>
+        {/* Onboarding content with animation */}
+        <Animated.View 
+          style={[
+            styles.onboardingSection,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
+        >
+          <Image 
+            source={splashData[currentStep].image} 
+            style={styles.onboardingImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.onboardingTitle}>{splashData[currentStep].title}</Text>
+          <Text style={styles.onboardingSubtitle}>{splashData[currentStep].subtitle}</Text>
+        </Animated.View>
 
         {/* Progress dots */}
         <Animated.View 
@@ -196,12 +222,23 @@ export default function SplashScreen() {
           ]}
         >
           <View style={styles.buttonContainer}>
-            <Text style={styles.skipButton} onPress={handleSkip}>
-              Bỏ qua
-            </Text>
-            <Text style={styles.nextButton} onPress={handleNext}>
-              {currentStep < splashData.length - 1 ? 'Tiếp theo' : 'Bắt đầu'}
-            </Text>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+              <Text style={styles.skipButtonText}>Bỏ qua</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.navButtons}>
+              {currentStep > 0 && (
+                <TouchableOpacity style={styles.prevButton} onPress={handlePrevious}>
+                  <Text style={styles.prevButtonText}>Trước</Text>
+                </TouchableOpacity>
+              )}
+              
+              <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+                <Text style={styles.nextButtonText}>
+                  {currentStep < splashData.length - 1 ? 'Tiếp theo' : 'Bắt đầu'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Animated.View>
       </View>
@@ -261,26 +298,16 @@ const styles = StyleSheet.create({
     color: '#4A8C6B',
     letterSpacing: 2,
   },
-  brandLogo: {
-    width: 140,
-    height: 40,
-  },
   onboardingSection: {
     alignItems: 'center',
     marginBottom: 40,
     flex: 1,
     justifyContent: 'center',
-    backgroundColor: '#FFFF00', // Yellow background to see if section is visible
-    borderWidth: 2,
-    borderColor: '#0000FF',
   },
   onboardingImage: {
     width: width * 0.7,
     height: height * 0.3,
     marginBottom: 30,
-    backgroundColor: '#FF0000', // Red background to see if image area is visible
-    borderWidth: 2,
-    borderColor: '#000000',
   },
   onboardingTitle: {
     fontSize: 20,
@@ -289,14 +316,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 28,
     paddingHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 15,
   },
   onboardingSubtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#4A8C6B',
     textAlign: 'center',
-    lineHeight: 20,
-    paddingHorizontal: 30,
+    lineHeight: 24,
+    paddingHorizontal: 20,
     opacity: 0.8,
   },
   progressSection: {
@@ -327,26 +354,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: width * 0.8,
+    width: width * 0.9,
   },
   skipButton: {
+    padding: 10,
+  },
+  skipButtonText: {
     fontSize: 16,
     color: '#4A8C6B',
     opacity: 0.7,
-    padding: 10,
   },
-  nextButton: {
-    fontSize: 16,
-    color: '#4A8C6B',
-    fontWeight: 'bold',
-    padding: 12,
-    backgroundColor: '#CAEAC7',
+  navButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  prevButton: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 25,
-    paddingHorizontal: 25,
+    marginRight: 10,
     borderWidth: 1,
     borderColor: '#4A8C6B',
+  },
+  prevButtonText: {
+    fontSize: 16,
+    color: '#4A8C6B',
+    fontWeight: '500',
+  },
+  nextButton: {
+    backgroundColor: '#4A8C6B',
+    paddingHorizontal: 25,
+    paddingVertical: 12,
+    borderRadius: 25,
     minWidth: 120,
-    textAlign: 'center',
+    alignItems: 'center',
+  },
+  nextButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   footer: {
     position: 'absolute',
@@ -359,27 +406,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#4A8C6B',
     opacity: 0.6,
-  },
-  debugText: {
-    fontSize: 12,
-    color: '#FF0000',
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  testImageContainer: {
-    width: width * 0.8,
-    height: height * 0.4,
-    backgroundColor: '#FFFF00', // Yellow background
-    borderWidth: 2,
-    borderColor: '#0000FF',
-    marginBottom: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  testText: {
-    fontSize: 16,
-    color: '#000000',
-    fontWeight: 'bold',
-    marginBottom: 10,
   },
 });

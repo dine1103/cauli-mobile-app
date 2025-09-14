@@ -7,10 +7,7 @@ import {
   Dimensions,
   StatusBar,
   TouchableOpacity,
-  Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-// import { PanGestureHandler, State } from 'react-native-gesture-handler';
 
 const { width, height } = Dimensions.get('window');
 
@@ -48,13 +45,7 @@ interface OnboardingScreenProps {
 }
 
 export default function OnboardingScreen({ onComplete, onBack }: OnboardingScreenProps) {
-  const navigation = useNavigation();
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Xử lý vuốt trái/phải (disabled for web)
-  const handleSwipe = (event: any) => {
-    // Disabled for web compatibility
-  };
 
   const handleNext = () => {
     if (currentIndex < onboardingData.length - 1) {
@@ -69,26 +60,18 @@ export default function OnboardingScreen({ onComplete, onBack }: OnboardingScree
   };
 
   const handleSkip = () => {
-    // Chuyển đến WelcomeScreen hoặc quay lại
     if (onBack) {
-      onBack(); // Quay lại WelcomeScreen
+      onBack();
     } else if (onComplete) {
-      onComplete(); // Chuyển đến WelcomeScreen (từ splash)
-    } else {
-      // Fallback: không navigate, chỉ log
-      console.log('Skip - no callback provided');
+      onComplete();
     }
   };
 
   const handleStart = () => {
-    // Khi bấm "Bắt đầu" ở screen cuối
     if (onBack) {
-      onBack(); // Quay lại WelcomeScreen
+      onBack();
     } else if (onComplete) {
-      onComplete(); // Chuyển đến WelcomeScreen (từ splash)
-    } else {
-      // Fallback: không navigate, chỉ log
-      console.log('Start - no callback provided');
+      onComplete();
     }
   };
 
@@ -115,8 +98,6 @@ export default function OnboardingScreen({ onComplete, onBack }: OnboardingScree
             source={currentData.image}
             style={styles.image}
             resizeMode="contain"
-            onError={(error) => console.log('Image error:', error)}
-            onLoad={() => console.log('Image loaded')}
           />
         </View>
 
@@ -124,7 +105,6 @@ export default function OnboardingScreen({ onComplete, onBack }: OnboardingScree
         <View style={styles.textContainer}>
           <Text style={styles.title}>{currentData.title}</Text>
           <Text style={styles.subtitle}>{currentData.subtitle}</Text>
-          <Text style={styles.swipeHint}>Sử dụng nút để chuyển</Text>
         </View>
       </View>
 
@@ -181,16 +161,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 40,
   },
-  logo: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#4A8C6B',
-  },
   brandLogo: {
     width: 120,
     height: 40,
@@ -209,18 +179,6 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 2px 8px rgba(0,0,0,0.1)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-      },
-    }),
   },
   image: {
     width: '100%',
@@ -244,14 +202,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     opacity: 0.8,
-  },
-  swipeHint: {
-    fontSize: 12,
-    color: '#4A8C6B',
-    textAlign: 'center',
-    marginTop: 10,
-    opacity: 0.6,
-    fontStyle: 'italic',
   },
   progressContainer: {
     flexDirection: 'row',
