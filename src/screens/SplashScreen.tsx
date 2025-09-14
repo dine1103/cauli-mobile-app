@@ -8,7 +8,7 @@ import {
   Dimensions,
   StatusBar,
 } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 // Debug: Add console.log to see what's happening
 console.log('SplashScreen component loaded');
@@ -44,7 +44,7 @@ const splashData = [
 ];
 
 export default function SplashScreen() {
-  // const navigation = useNavigation();
+  const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -82,7 +82,6 @@ export default function SplashScreen() {
         console.log('Auto advancing to step:', currentStep + 1);
         setCurrentStep(currentStep + 1);
       } else {
-        console.log('All onboarding screens completed');
         // After completing all onboarding screens, do nothing
         // App.tsx will handle navigation
       }
@@ -95,13 +94,14 @@ export default function SplashScreen() {
     if (currentStep < splashData.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Do nothing when on last screen
-      // App.tsx will handle navigation
+      // Navigate to Welcome when on last screen
+      navigation.navigate('Welcome' as never);
     }
   };
 
   const handleSkip = () => {
-    // Do nothing - App.tsx will handle navigation
+    // Navigate to Welcome when skip is pressed
+    navigation.navigate('Welcome' as never);
   };
 
   return (
