@@ -14,7 +14,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -44,53 +43,19 @@ export default function RegisterScreen() {
     }
 
     setLoading(true);
-    console.log('Starting signup process...');
-    console.log('Email:', email.trim());
-    console.log('Password length:', password.trim().length);
-    console.log('Full name:', fullName.trim());
     
-    try {
-      console.log('Calling supabase.auth.signUp...');
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password.trim(),
-        options: {
-          data: {
-            full_name: fullName.trim(),
-          },
-        },
-      });
-
-      console.log('Supabase response received');
-      console.log('Data:', data);
-      console.log('Error:', error);
-
-      if (error) {
-        console.error('Signup error details:', {
-          message: error.message,
-          status: error.status,
-          statusText: error.statusText,
-          name: error.name
-        });
-        Alert.alert('Lỗi đăng ký', `${error.message} (Status: ${error.status})`);
-      } else {
-        console.log('Signup success - User created:', data.user);
-        console.log('Session:', data.session);
-        setShowSuccess(true);
-        
-        // Auto navigate after 3 seconds
-        setTimeout(() => {
-          navigation.navigate('Login' as never);
-        }, 3000);
-      }
-    } catch (error) {
-      console.error('Signup catch error:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
-      Alert.alert('Lỗi', `Có lỗi xảy ra khi đăng ký: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
+    // Simulate API call
+    setTimeout(() => {
       setLoading(false);
-    }
+      setShowSuccess(true);
+      console.log('Đăng ký thành công!');
+      
+      // Auto navigate after 3 seconds
+      setTimeout(() => {
+        console.log('Chuyển đến LoginScreen');
+        navigation.navigate('Login' as never);
+      }, 3000);
+    }, 2000);
   };
 
   return (
@@ -120,7 +85,6 @@ export default function RegisterScreen() {
             {showSuccess && (
               <View style={styles.successContainer}>
                 <Text style={styles.successText}>✅ Đăng ký thành công!</Text>
-                <Text style={styles.successSubtext}>Vui lòng kiểm tra email để xác thực tài khoản</Text>
                 <Text style={styles.successSubtext}>Đang chuyển đến trang đăng nhập...</Text>
               </View>
             )}
@@ -312,6 +276,5 @@ const styles = StyleSheet.create({
     color: '#4A8C6B',
     textAlign: 'center',
     opacity: 0.8,
-    marginBottom: 4,
   },
 });

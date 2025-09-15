@@ -14,83 +14,36 @@ import {
   Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { supabase } from '../lib/supabase';
 
 const { width, height } = Dimensions.get('window');
 
-export default function RegisterScreen() {
+export default function LoginScreen() {
   const navigation = useNavigation();
-  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleRegister = async () => {
-    if (!fullName || !email || !password || !confirmPassword) {
+  const handleLogin = async () => {
+    if (!email || !password) {
       Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ thông tin');
       return;
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Lỗi', 'Mật khẩu xác nhận không khớp');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Lỗi', 'Mật khẩu phải có ít nhất 6 ký tự');
-      return;
-    }
-
     setLoading(true);
-    console.log('Starting signup process...');
-    console.log('Email:', email.trim());
-    console.log('Password length:', password.trim().length);
-    console.log('Full name:', fullName.trim());
     
-    try {
-      console.log('Calling supabase.auth.signUp...');
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password.trim(),
-        options: {
-          data: {
-            full_name: fullName.trim(),
-          },
-        },
-      });
-
-      console.log('Supabase response received');
-      console.log('Data:', data);
-      console.log('Error:', error);
-
-      if (error) {
-        console.error('Signup error details:', {
-          message: error.message,
-          status: error.status,
-          statusText: error.statusText,
-          name: error.name
-        });
-        Alert.alert('Lỗi đăng ký', `${error.message} (Status: ${error.status})`);
-      } else {
-        console.log('Signup success - User created:', data.user);
-        console.log('Session:', data.session);
-        setShowSuccess(true);
-        
-        // Auto navigate after 3 seconds
-        setTimeout(() => {
-          navigation.navigate('Login' as never);
-        }, 3000);
-      }
-    } catch (error) {
-      console.error('Signup catch error:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
-      Alert.alert('Lỗi', `Có lỗi xảy ra khi đăng ký: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
+    // Simulate API call
+    setTimeout(() => {
       setLoading(false);
-    }
+      setShowSuccess(true);
+      console.log('Đăng nhập thành công!');
+      
+      // Auto navigate after 3 seconds
+      setTimeout(() => {
+        console.log('Chuyển đến MainTabs');
+        navigation.navigate('Main' as never);
+      }, 3000);
+    }, 2000);
   };
 
   return (
@@ -113,31 +66,19 @@ export default function RegisterScreen() {
 
           {/* Main content */}
           <View style={styles.mainContent}>
-            <Text style={styles.title}>Tạo tài khoản</Text>
-            <Text style={styles.subtitle}>Điền thông tin để tạo tài khoản mới</Text>
+            <Text style={styles.title}>Đăng nhập</Text>
+            <Text style={styles.subtitle}>Nhập thông tin để đăng nhập</Text>
 
             {/* Success message */}
             {showSuccess && (
               <View style={styles.successContainer}>
-                <Text style={styles.successText}>✅ Đăng ký thành công!</Text>
-                <Text style={styles.successSubtext}>Vui lòng kiểm tra email để xác thực tài khoản</Text>
-                <Text style={styles.successSubtext}>Đang chuyển đến trang đăng nhập...</Text>
+                <Text style={styles.successText}>✅ Đăng nhập thành công!</Text>
+                <Text style={styles.successSubtext}>Chào mừng bạn đến với Cauli!</Text>
               </View>
             )}
 
             {/* Form */}
             <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Họ và tên</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Nhập họ và tên"
-                  value={fullName}
-                  onChangeText={setFullName}
-                  autoCapitalize="words"
-                />
-              </View>
-
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
@@ -161,33 +102,22 @@ export default function RegisterScreen() {
                 />
               </View>
 
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Xác nhận mật khẩu</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Nhập lại mật khẩu"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                />
-              </View>
-
               <TouchableOpacity
-                style={[styles.registerButton, loading && styles.disabledButton]}
-                onPress={handleRegister}
+                style={[styles.loginButton, loading && styles.disabledButton]}
+                onPress={handleLogin}
                 disabled={loading}
               >
-                <Text style={styles.registerButtonText}>
-                  {loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
+                <Text style={styles.loginButtonText}>
+                  {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Footer */}
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Đã có tài khoản? </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
-                <Text style={styles.loginLink}>Đăng nhập</Text>
+              <Text style={styles.footerText}>Chưa có tài khoản? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
+                <Text style={styles.registerLink}>Đăng ký</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -261,7 +191,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
-  registerButton: {
+  loginButton: {
     backgroundColor: '#4A8C6B',
     borderRadius: 12,
     paddingVertical: 16,
@@ -271,7 +201,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.6,
   },
-  registerButtonText: {
+  loginButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
@@ -286,7 +216,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4A8C6B',
   },
-  loginLink: {
+  registerLink: {
     fontSize: 16,
     color: '#4A8C6B',
     fontWeight: 'bold',
@@ -312,6 +242,5 @@ const styles = StyleSheet.create({
     color: '#4A8C6B',
     textAlign: 'center',
     opacity: 0.8,
-    marginBottom: 4,
   },
 });

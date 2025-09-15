@@ -23,6 +23,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -32,15 +33,25 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
 
       if (error) {
-        Alert.alert('Lỗi đăng nhập', error.message);
+        console.error('Login error:', error);
+        Alert.alert('Lỗi đăng nhập', error.message || 'Có lỗi xảy ra khi đăng nhập');
+      } else {
+        console.log('Login success:', data);
+        setShowSuccess(true);
+        
+        // Auto navigate after 3 seconds
+        setTimeout(() => {
+          navigation.navigate('Main' as never);
+        }, 3000);
       }
     } catch (error) {
+      console.error('Login catch error:', error);
       Alert.alert('Lỗi', 'Có lỗi xảy ra khi đăng nhập');
     } finally {
       setLoading(false);
@@ -72,6 +83,14 @@ export default function LoginScreen() {
               style={styles.mainImage}
               resizeMode="contain"
             />
+
+            {/* Success message */}
+            {showSuccess && (
+              <View style={styles.successContainer}>
+                <Text style={styles.successText}>✅ Đăng nhập thành công!</Text>
+                <Text style={styles.successSubtext}>Chào mừng bạn đến với Cauli!</Text>
+              </View>
+            )}
             <Text style={styles.tagline}>Hãy để Cauli lắng nghe và chia sẻ cùng bạn</Text>
           </View>
 
@@ -227,5 +246,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textDecorationLine: 'underline',
     marginLeft: 5,
+  },
+  successContainer: {
+    backgroundColor: '#E8F5E8',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#4A8C6B',
+  },
+  successText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4A8C6B',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  successSubtext: {
+    fontSize: 14,
+    color: '#4A8C6B',
+    textAlign: 'center',
+    opacity: 0.8,
   },
 });
