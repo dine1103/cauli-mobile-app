@@ -1,27 +1,47 @@
 {
   "expo": {
-    "name": "Cauli - Mental Health Companion",
+    "name": "Cauli",
     "slug": "cauli-mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icons/icon-square.png",
+    "splash": {
+      "image": "./assets/icons/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#CAEAC7"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cauli.mobileapp",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#667eea"
+        "foregroundImage": "./assets/icons/icon-square.png",
+        "backgroundColor": "#CAEAC7"
       },
-      "package": "com.anonymous.caulimobileapp"
+      "package": "com.cauli.mobileapp",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/icons/icon.png"
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "cauli-mobile-app-2025"
+      }
+    }
   }
 }
