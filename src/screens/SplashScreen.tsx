@@ -45,26 +45,32 @@ export default function SplashScreen() {
   const navigation = useNavigation();
   const [currentStep, setCurrentStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
 
   // PanResponder for swipe gestures
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > 10;
+        return Math.abs(gestureState.dx) > 20;
+      },
+      onPanResponderGrant: () => {
+        // Clear any existing timers when user starts interacting
+        // This prevents auto-advance during manual swipe
       },
       onPanResponderMove: (evt, gestureState) => {
-        // Handle swipe gesture
+        // Visual feedback during swipe (optional)
       },
       onPanResponderRelease: (evt, gestureState) => {
-        const { dx } = gestureState;
+        const { dx, vx } = gestureState;
         const threshold = 50;
+        const velocityThreshold = 0.3;
 
-        if (dx > threshold && currentStep > 0) {
+        // Check both distance and velocity for better UX
+        if ((dx > threshold || vx > velocityThreshold) && currentStep > 0) {
           // Swipe right - go to previous screen
           handlePrevious();
-        } else if (dx < -threshold && currentStep < splashData.length - 1) {
+        } else if ((dx < -threshold || vx < -velocityThreshold) && currentStep < splashData.length - 1) {
           // Swipe left - go to next screen
           handleNext();
         }
@@ -84,11 +90,6 @@ export default function SplashScreen() {
         toValue: 1,
         tension: 50,
         friction: 7,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 800,
         useNativeDriver: true,
       }),
     ]).start();
@@ -173,10 +174,7 @@ export default function SplashScreen() {
             styles.logoSection,
             {
               opacity: fadeAnim,
-              transform: [
-                { scale: scaleAnim },
-                { translateY: slideAnim }
-              ]
+              transform: [{ scale: scaleAnim }]
             }
           ]}
         >
@@ -193,7 +191,6 @@ export default function SplashScreen() {
             styles.onboardingSection,
             {
               opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
             }
           ]}
           {...panResponder.panHandlers}
@@ -241,7 +238,7 @@ export default function SplashScreen() {
           }
         ]}
       >
-        <Text style={styles.footerText}>© 2024 Cauli App</Text>
+        <Text style={styles.footerText}>© 2025 Cauli App</Text>
       </Animated.View>
     </View>
   );
@@ -263,44 +260,46 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 100,
   },
   logoSection: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 20,
   },
   logoImage: {
-    width: 200,
-    height: 80,
+    width: 180,
+    height: 70,
   },
   onboardingSection: {
     alignItems: 'center',
-    marginBottom: 40,
     flex: 1,
     justifyContent: 'center',
+    maxHeight: height * 0.6,
   },
   onboardingImage: {
-    width: width * 0.7,
-    height: height * 0.3,
-    marginBottom: 30,
+    width: width * 0.6,
+    height: height * 0.25,
+    marginBottom: 20,
   },
   onboardingTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#4A8C6B',
     textAlign: 'center',
-    lineHeight: 28,
-    paddingHorizontal: 20,
-    marginBottom: 15,
+    lineHeight: 24,
+    paddingHorizontal: 15,
+    marginBottom: 10,
   },
   onboardingSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#4A8C6B',
     textAlign: 'center',
-    lineHeight: 24,
-    paddingHorizontal: 20,
+    lineHeight: 20,
+    paddingHorizontal: 15,
     opacity: 0.8,
   },
   swipeHint: {
@@ -313,7 +312,7 @@ const styles = StyleSheet.create({
   },
   progressSection: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
   },
   progressDots: {
     flexDirection: 'row',

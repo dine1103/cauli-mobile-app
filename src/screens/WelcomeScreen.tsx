@@ -72,7 +72,7 @@ export default function WelcomeScreen() {
               style={styles.tertiaryButton}
               onPress={resetOnboarding}
             >
-              <Text style={styles.tertiaryButtonText}>Xem lại Onboarding</Text>
+              {/* <Text style={styles.tertiaryButtonText}>Xem lại Onboarding</Text> */}
             </TouchableOpacity>
           )}
         </View>
