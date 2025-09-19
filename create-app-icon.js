@@ -14,3 +14,4 @@ fs.copyFileSync(sourcePath, targetPath);
 
 console.log('✅ App icon created at:', targetPath);
 console.log('📱 Icon should now appear on your device');
+
