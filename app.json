@@ -16,8 +16,9 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cauli.mobileapp",
-      "buildNumber": "1.0.0"
+      "bundleIdentifier": "com.anonymous.caulimobileapp",
+      "buildNumber": "1.0.0",
+      "deploymentTarget": "12.0"
     },
     "android": {
       "adaptiveIcon": {

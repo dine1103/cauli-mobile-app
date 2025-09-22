@@ -46,7 +46,6 @@ export default function SplashScreen() {
   const [currentStep, setCurrentStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
-
   // PanResponder for swipe gestures
   const panResponder = useRef(
     PanResponder.create({
@@ -55,24 +54,40 @@ export default function SplashScreen() {
         return Math.abs(gestureState.dx) > 20;
       },
       onPanResponderGrant: () => {
-        // Clear any existing timers when user starts interacting
-        // This prevents auto-advance during manual swipe
+        // User started interacting
+        console.log('User started interacting');
       },
       onPanResponderMove: (evt, gestureState) => {
         // Visual feedback during swipe (optional)
       },
       onPanResponderRelease: (evt, gestureState) => {
         const { dx, vx } = gestureState;
-        const threshold = 50;
-        const velocityThreshold = 0.3;
+        const threshold = 30; // Reduced threshold for easier detection
+        const velocityThreshold = 0.2; // Reduced velocity threshold
 
-        // Check both distance and velocity for better UX
-        if ((dx > threshold || vx > velocityThreshold) && currentStep > 0) {
-          // Swipe right - go to previous screen
+        console.log('Swipe detected:', { dx, vx, currentStep, threshold, velocityThreshold });
+
+        // Check if swipe is strong enough
+        const isSwipeRight = dx > threshold || vx > velocityThreshold;
+        const isSwipeLeft = dx < -threshold || vx < -velocityThreshold;
+
+        if (isSwipeRight && currentStep > 0) {
+          console.log('Swipe RIGHT - going to previous screen, currentStep:', currentStep);
           handlePrevious();
-        } else if ((dx < -threshold || vx < -velocityThreshold) && currentStep < splashData.length - 1) {
-          // Swipe left - go to next screen
+        } 
+        else if (isSwipeLeft && currentStep < splashData.length - 1) {
+          console.log('Swipe LEFT - going to next screen');
           handleNext();
+        }
+        else if (isSwipeLeft && currentStep === splashData.length - 1) {
+          console.log('Swipe LEFT on last screen - going to Welcome');
+          navigation.navigate('Welcome' as never);
+        }
+        else if (isSwipeRight && currentStep === 0) {
+          console.log('Swipe RIGHT on first screen - no action');
+        }
+        else {
+          console.log('Swipe not strong enough or invalid direction', { isSwipeRight, isSwipeLeft, currentStep });
         }
       },
     })
@@ -93,34 +108,15 @@ export default function SplashScreen() {
         useNativeDriver: true,
       }),
     ]).start();
+
+    // No total timer needed - per-screen timers handle everything
+    console.log('SplashScreen initialized');
   }, []);
 
-  // Auto-navigation logic - 3 seconds per screen
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentStep < splashData.length - 1) {
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => {
-          setCurrentStep(currentStep + 1);
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }).start();
-        });
-      } else {
-        // After completing all onboarding screens, navigate to Welcome
-        setTimeout(() => {
-          navigation.navigate('Welcome' as never);
-        }, 1000);
-      }
-    }, 3000); // 3 seconds per screen
+  // No auto-navigation - only manual swipe navigation
+  // Removed all auto-timer logic
 
-    return () => clearTimeout(timer);
-  }, [currentStep]);
+  // No cleanup needed - only manual swipe navigation
 
   const handleNext = () => {
     if (currentStep < splashData.length - 1) {
@@ -143,7 +139,9 @@ export default function SplashScreen() {
   };
 
   const handlePrevious = () => {
+    console.log('handlePrevious called, currentStep:', currentStep);
     if (currentStep > 0) {
+      console.log('Going to previous step:', currentStep - 1);
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 300,
@@ -156,6 +154,8 @@ export default function SplashScreen() {
           useNativeDriver: true,
         }).start();
       });
+    } else {
+      console.log('Already at first step, cannot go previous');
     }
   };
 
@@ -200,9 +200,9 @@ export default function SplashScreen() {
             style={styles.onboardingImage}
             resizeMode="contain"
           />
-          <Text style={styles.onboardingTitle}>{splashData[currentStep].title}</Text>
-          <Text style={styles.onboardingSubtitle}>{splashData[currentStep].subtitle}</Text>
-          <Text style={styles.swipeHint}>← Vuốt để chuyển →</Text>
+            <Text style={styles.onboardingTitle}>{splashData[currentStep].title}</Text>
+            <Text style={styles.onboardingSubtitle}>{splashData[currentStep].subtitle}</Text>
+            <Text style={styles.swipeHint}>← Vuốt để chuyển →</Text>
         </Animated.View>
 
         {/* Progress dots */}
